@@ -20,12 +20,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.jetweather.data.utils.to12HourFormat
-import com.example.jetweather.domain.location.UserLocation
+import com.example.jetweather.domain.models.entity.UserLocation
 import com.example.jetweather.domain.mapper.DayWiseForecast
 import com.example.jetweather.domain.mapper.HourlyForecast
 import com.example.jetweather.domain.utils.WeatherType
@@ -42,11 +43,13 @@ fun WeatherScreen(
 
     val forecast = hourlyForecasts[0]
     val weather = forecast.weatherType
-    val temperature = "${forecast.temperature}${forecast.hourlyUnits.temperature_2m}"
+    val temperature = "${forecast.temperature}${forecast.hourlyUnits.temperature_180m}"
     val scrollState = rememberScrollState()
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(state = scrollState),
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(state = scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -87,6 +90,14 @@ fun WeatherScreen(
         }
         Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
 
+        Text(
+            text = "7 days forecast",
+            fontFamily = Roboto,
+            fontWeight = FontWeight.Medium,
+            color = Color.White,
+            modifier = Modifier.padding(6.dp).align(Alignment.Start)
+        )
+
         dailyForecast.forEach {
             DailyForecastItem(weather = it)
             Spacer(modifier = Modifier.padding(bottom = 6.dp))
@@ -104,7 +115,8 @@ fun HourlyForecastItem(
     Box(
         modifier = Modifier
             .size(90.dp, 120.dp)
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 8.dp)
+            .background(color = ColorPalate.LightNavyBlue, shape = RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -112,7 +124,8 @@ fun HourlyForecastItem(
             color = Color.White,
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.TopCenter),
+                .align(Alignment.TopCenter)
+                .padding(top = 4.dp),
             textAlign = TextAlign.Center,
             fontSize = 16.sp,
         )
@@ -127,7 +140,7 @@ fun HourlyForecastItem(
         )
 
         Text(
-            text = "${forecast.temperature} °C",
+            text = "${forecast.temperature} ${forecast.hourlyUnits.temperature_180m}",
             color = Color.White,
             modifier = Modifier
                 .fillMaxWidth()
@@ -199,7 +212,7 @@ fun OtherDetailsRow(
     val precipitation = "${hourlyForecast.precipitation}${hourlyForecast.hourlyUnits.precipitation}"
     val humidity =
         "${hourlyForecast.relativeHumidity}${hourlyForecast.hourlyUnits.relativehumidity_2m}"
-    val wind = "${hourlyForecast.wind}${hourlyForecast.hourlyUnits.windspeed_10m}"
+    val wind = "${hourlyForecast.wind}${hourlyForecast.hourlyUnits.windspeed_180m}"
     val pressure = "${hourlyForecast.pressure}${hourlyForecast.hourlyUnits.pressure_msl}"
 
     Row(
@@ -208,20 +221,27 @@ fun OtherDetailsRow(
             .background(ColorPalate.NavyBlue),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        OtherDetailRowItem(icon = painterResource(id = R.drawable.ic_drop), desc = precipitation)
+        OtherDetailRowItem(
+            icon = painterResource(id = R.drawable.ic_drop),
+            desc = precipitation,
+            modifier = Modifier.size(20.dp)
+        )
         OtherDetailRowItem(
             icon = rememberVectorPainter(image = Icons.Rounded.Thermostat),
-            desc = humidity
+            desc = humidity,
+            modifier = Modifier.size(20.dp)
         )
-        OtherDetailRowItem(icon = painterResource(id = R.drawable.ic_wind), desc = wind)
-        OtherDetailRowItem(icon = painterResource(id = R.drawable.ic_pressure), desc = pressure)
+        OtherDetailRowItem(icon = painterResource(id = R.drawable.ic_wind), desc = wind, modifier = Modifier.size(20.dp))
+        OtherDetailRowItem(icon = painterResource(id = R.drawable.ic_pressure), desc = pressure, modifier = Modifier.size(20.dp))
     }
 }
 
 @Composable
 fun OtherDetailRowItem(
     icon: Painter,
-    desc: String
+    desc: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.body1
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -229,14 +249,14 @@ fun OtherDetailRowItem(
     ) {
         Icon(
             painter = icon, contentDescription = desc, tint = Color(0xff6686b6),
-            modifier = Modifier.size(24.dp)
+            modifier = modifier
         )
         Spacer(modifier = Modifier.padding(start = 4.dp))
         Text(
             text = desc,
             fontFamily = Roboto,
             color = Color.White,
-            style = MaterialTheme.typography.body1
+            style = style
         )
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.jetweather.ui.presentation.navigation.WeatherNavigation
 import com.example.jetweather.ui.sharedpreferences.SharedPreferenceUtils
@@ -37,6 +38,8 @@ class MainActivity : ComponentActivity() {
     companion object{
        const val LOCATION_PERM_MESSAGE = "Allowing an app to access your location will provide you with the most accurate and up-to-date weather information based on your current location." +
                "It will also be more convenient for you as you don't have to manually enter your location."
+
+        const val BOTTOM_PADDING =  60
     }
 }
 

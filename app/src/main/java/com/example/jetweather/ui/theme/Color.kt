@@ -9,6 +9,8 @@ val Teal200 = Color(0xFF03DAC5)
 
 
 object ColorPalate {
-    val NavyBlue = Color(0xff1d2a36)
+    val NavyBlue = Color(0xff081b25)
     val BabyPink = Color(0xfff16eb1)
+    val LightNavyBlue = Color(0xff152c39)
+    val CardColor = Color(0xff47677d)
 }

@@ -1,4 +1,4 @@
-package com.example.jetweather.domain.models
+package com.example.jetweather.ui.states
 
 import com.example.jetweather.domain.mapper.DayWiseForecast
 

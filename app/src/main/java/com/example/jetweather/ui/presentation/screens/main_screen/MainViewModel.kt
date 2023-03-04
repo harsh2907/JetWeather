@@ -1,4 +1,4 @@
-package com.example.jetweather.ui.presentation.screens.main_weather_screen
+package com.example.jetweather.ui.presentation.screens.main_screen
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -6,14 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.jetweather.data.utils.Response
 import com.example.jetweather.domain.repository.WeatherRepository
 import com.example.jetweather.domain.location.LocationClient
-import com.example.jetweather.domain.location.toUserLocation
 import com.example.jetweather.domain.mapper.toDailyForecasts
 import com.example.jetweather.domain.mapper.toDailyHourlyForecast
-import com.example.jetweather.domain.models.DailyWeatherState
-import com.example.jetweather.domain.models.HourlyWeatherState
-import com.example.jetweather.domain.models.UserData
-import com.example.jetweather.domain.models.UserDataState
-import com.example.jetweather.domain.utils.WeatherUtil.roundOfToFour
+import com.example.jetweather.domain.models.entity.toUserLocation
+import com.example.jetweather.ui.states.DailyWeatherState
+import com.example.jetweather.ui.states.HourlyWeatherState
+import com.example.jetweather.ui.states.UserData
+import com.example.jetweather.ui.states.UserDataState
+import com.example.jetweather.domain.repository.LocationRepository
 import com.example.jetweather.ui.states.LocationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val weatherRepo: WeatherRepository,
-    private val defaultLocationManager: LocationClient
+    private val defaultLocationManager: LocationClient,
+    private val locationRepo: LocationRepository
 ) : ViewModel() {
 
     private val currentLocation = MutableStateFlow(LocationState())
@@ -43,6 +44,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun getUserData() {
+        _userData.update { it.copy(isLoading = true) }
         combine(
             currentLocation,
             dailyHourlyForecast,
@@ -62,7 +64,7 @@ class MainViewModel @Inject constructor(
                     )
                 }
 
-                location.location.city.isNotEmpty() && hourlyForecast.forecasts.isNotEmpty() && dailyForecast.forecasts.isNotEmpty()  -> _userData.update {
+                location.location.city.isNotEmpty() && hourlyForecast.forecasts.isNotEmpty() && dailyForecast.forecasts.isNotEmpty() -> _userData.update {
 
                     it.copy(
                         userData = UserData(
@@ -101,24 +103,28 @@ class MainViewModel @Inject constructor(
                             }
 
                             val coordinate = async {
-                                getNameFromCoordinates(userLoc.lat, userLoc.long)
+                                getNameFromCoordinates(
+                                    lat = userLoc.lat.toString(),
+                                    long = userLoc.long.toString()
+                                )
                             }
                             val hourlyForecast = async {
                                 getDailyHourlyForecast(
-                                    lat = userLoc.lat.toDouble().roundOfToFour().toString(),
-                                    long = userLoc.long.toDouble().roundOfToFour().toString()
+                                    lat = userLoc.lat.toString(),
+                                    long = userLoc.long.toString()
                                 )
                             }
                             val dailyForecast = async {
                                 getDailyForecast(
-                                    lat = userLoc.lat.toDouble().roundOfToFour().toString(),
-                                    long = userLoc.long.toDouble().roundOfToFour().toString()
+                                    lat = userLoc.lat.toString(),
+                                    long = userLoc.long.toString()
                                 )
                             }
 
                             coordinate.await()
                             hourlyForecast.await()
                             dailyForecast.await()
+
                         }
                     }
                     is Response.Error -> currentLocation.update {
@@ -134,7 +140,7 @@ class MainViewModel @Inject constructor(
 
     private fun getNameFromCoordinates(lat: String, long: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            weatherRepo.getNameFromCoordinates(lat, long).collectLatest { res ->
+            locationRepo.getNameFromCoordinates(lat, long).collectLatest { res ->
                 when (res) {
                     is Response.Loading -> currentLocation.update {
                         it.copy(
@@ -147,9 +153,9 @@ class MainViewModel @Inject constructor(
                             currentLocation.update {
                                 it.copy(
                                     location = it.location.copy(
-                                        city = geo.name,
-                                        state = geo.state,
-                                        country = geo.country
+                                        city = geo.name ?: "",
+                                        state = geo.state ?: "",
+                                        country = geo.country ?: ""
                                     ),
                                     isLoading = false,
                                     error = ""

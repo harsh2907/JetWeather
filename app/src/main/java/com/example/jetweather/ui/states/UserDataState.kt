@@ -1,11 +1,11 @@
-package com.example.jetweather.domain.models
+package com.example.jetweather.ui.states
 
-import com.example.jetweather.domain.location.UserLocation
+import com.example.jetweather.domain.models.entity.UserLocation
 import com.example.jetweather.domain.mapper.DayWiseForecast
 import com.example.jetweather.domain.mapper.HourlyForecast
 
 data class UserDataState(
-    val userData:UserData?=null,
+    val userData: UserData?=null,
     val isLoading:Boolean = true,
     val error:String = ""
 )
